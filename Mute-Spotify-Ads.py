@@ -10,23 +10,44 @@ CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 REDIRECT_URI = "http://localhost:8888/callback"
 CACHE_PATH = ".spotify_cache"
 
-sp_oauth = SpotifyOAuth(
-    client_id=CLIENT_ID,
-    client_secret=CLIENT_SECRET,
-    redirect_uri=REDIRECT_URI,
-    scope="user-read-playback-state user-read-currently-playing",
-    cache_path=CACHE_PATH
-)
+def initialize_spotify():
+    """Initialize Spotify client with proper authentication handling"""
+    print("Initializing Spotify client...")
 
-sp = spotipy.Spotify(auth_manager=sp_oauth)
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise ValueError(
+            "Missing Spotify credentials. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables."
+        )
+
+    sp_oauth = SpotifyOAuth(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        redirect_uri=REDIRECT_URI,
+        scope="user-read-playback-state user-read-currently-playing",
+        cache_path=CACHE_PATH,
+        open_browser=True
+    )
+
+    # Force authentication if no cache exists
+    if not os.path.exists(CACHE_PATH):
+        print("No authentication cache found. Starting authentication...")
+        print("A browser window will open. Please log in to Spotify and authorize the application.")
+        token_info = sp_oauth.get_cached_token()
+        if not token_info:
+            raise Exception("Failed to get access token. Please try again.")
+        print("Authentication successful! Cache file created.")
+
+    return spotipy.Spotify(auth_manager=sp_oauth)
 
 
-def refresh_token():
+def refresh_token(sp_oauth):
     try:
         token_info = sp_oauth.get_cached_token()
         if not token_info:
-            print("No token cache found. Please authenticate first.")
-            return None
+            print("No token cache found. Starting authentication...")
+            token_info = sp_oauth.get_access_token(as_dict=True)
+            if not token_info:
+                return None
 
         if sp_oauth.is_token_expired(token_info):
             print("Token expired, refreshing...")
@@ -45,7 +66,7 @@ def refresh_token():
         return None
 
 
-def get_current_track():
+def get_current_track(sp):
     try:
         # Try both endpoints to get playback information
         current = sp.currently_playing()
@@ -185,6 +206,15 @@ def restart_spotify():
 
 
 def monitor_spotify():
+    try:
+        # Initialize Spotify client with proper authentication
+        sp = initialize_spotify()
+        sp_oauth = sp.auth_manager
+    except Exception as e:
+        print(f"Failed to initialize Spotify client: {e}")
+        return
+
+
     is_muted = False
     consecutive_errors = 0
     max_errors = 3
@@ -202,7 +232,7 @@ def monitor_spotify():
                 time.sleep(0.1)
                 continue
 
-            token = refresh_token()
+            token = refresh_token(sp_oauth)
             if not token:
                 print("No valid token. Waiting before retry...")
                 time.sleep(30)
@@ -210,7 +240,7 @@ def monitor_spotify():
 
             sp.auth = token
 
-            is_ad = check_for_ads()
+            is_ad = check_for_ads(sp) # Passing sp to check_for_ads
             print(f"\nAd check result: {is_ad}")
 
             if is_ad:
