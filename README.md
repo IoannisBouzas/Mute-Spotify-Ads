@@ -1,6 +1,8 @@
 # Mute Spotify Ads
 
 This project mutes Spotify automatically when an ad is detected, then unmutes when a song starts. Ideal for those who want to listen without ads interrupting the flow.
+(Re-uploaded because i accidently exposed my client secret and id for Spotify Developer Dashboard)
+
 
 ## Features
 - **Automatic Ad Muting**: Detects Spotify ads and mutes the volume.
