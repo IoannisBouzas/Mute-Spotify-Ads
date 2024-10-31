@@ -30,11 +30,16 @@ def initialize_spotify():
 
     # Force authentication if no cache exists
     if not os.path.exists(CACHE_PATH):
-        print("No authentication cache found. Starting authentication...")
+        print("No authentication cache found. Starting first-time authentication...")
         print("A browser window will open. Please log in to Spotify and authorize the application.")
         token_info = sp_oauth.get_cached_token()
         if not token_info:
-            raise Exception("Failed to get access token. Please try again.")
+            #auth_url = sp_oauth.get_authorize_url()
+            #print(f"Please visit this URL to authorize the application: {auth_url}")
+            auth_code = sp_oauth.get_auth_response()
+            token_info = sp_oauth.get_access_token(auth_code)
+            if not token_info:
+                raise Exception("Failed to get access token. Please try again.")
         print("Authentication successful! Cache file created.")
 
     return spotipy.Spotify(auth_manager=sp_oauth)
@@ -44,8 +49,11 @@ def refresh_token(sp_oauth):
     try:
         token_info = sp_oauth.get_cached_token()
         if not token_info:
-            print("No token cache found. Starting authentication...")
-            token_info = sp_oauth.get_access_token(as_dict=True)
+            print("No token cache found. Starting new authentication...")
+            auth_url = sp_oauth.get_authorize_url()
+            print(f"Please visit this URL to authorize the application: {auth_url}")
+            auth_code = sp_oauth.get_auth_response()
+            token_info = sp_oauth.get_access_token(auth_code)
             if not token_info:
                 return None
 
@@ -148,8 +156,8 @@ def is_ad_playing(track_info):
     return False
 
 
-def check_for_ads():
-    track_info = get_current_track()
+def check_for_ads(sp):
+    track_info = get_current_track(sp)
     if track_info:
         print(f"\nCurrent Track Details:")
         for key, value in track_info.items():
