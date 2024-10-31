@@ -1,5 +1,5 @@
 # Mute Spotify Ads
-### (Re-uploaded because i accidently exposed my client secret and id for Spotify Developer Dashboard)
+### (Re-uploaded because i accidentally exposed client secret and id from Spotify Developer Dashboard)
 
 
 This project mutes Spotify automatically when an ad is detected, then unmutes when a song starts. Ideal for those who want to listen without ads interrupting the flow.
@@ -32,7 +32,7 @@ pip install spotipy pycaw psutil python-dotenv
 ```
 ### 3. Set Up a Spotify Developer Account
 - Go to the [Spotify Developer Dashboard](https://developer.spotify.com/) and create a new application.
-- In Redirect URIs, add: http://localhost/
+- In Redirect URIs, add: http://localhost:8888/callback
 - Copy your **Client ID** and **Client Secret**.
 
 ### 4. Configure Environment Variables
@@ -41,20 +41,21 @@ To keep credentials secure, set up environment variables on your system.
 
 - **Option 1: Environment Variables** **(Recommended)**
   - **On Windows:**
-  - Open Command Prompt and run:
+  - Open Command Prompt as Administrator and run:
     ```bash
     setx SPOTIPY_CLIENT_ID "your_client_id"
     setx SPOTIPY_CLIENT_SECRET "your_client_secret"
     ```
   - **On macOS/Linux:**
-  - Open Command Prompt and run:
+  - Add to your `~/.bashrc` or `~/.zshrc`:
     ```bash
     export SPOTIPY_CLIENT_ID="your_client_id"
     export SPOTIPY_CLIENT_SECRET="your_client_secret"
     ```
 ### 5. Run the Script
 
-Ensure Spotify is open, then run the script:
+1. Ensure Spotify is open
+2. Open terminal in project directory and run:
 ```bash
 python Mute-Spotify-Ads.py
 ```
@@ -64,19 +65,16 @@ This script interacts with Spotify’s API to determine what’s currently playi
 
 - Here is the general flow:
     
-         Start 
-         ↓
-         Check token → Refresh if needed
-         ↓
-         Get current track info from multiple sources
-         ↓
-         Check for ad using multiple methods
-         ↓
-         Update mute state if needed
-         ↓
-         Wait appropriate interval
-         ↓
-         Repeat
+```
+┌─────────────────┐    ┌─────────────┐    ┌────────────────┐
+│  Spotify API    │←───│ Auth Token  │←───│  Credentials   │
+└────────┬────────┘    └─────────────┘    └────────────────┘
+         │
+         ▼
+┌─────────────────┐    ┌─────────────┐    ┌────────────────┐
+│  Track Monitor  │───→│ Ad Detector │───→│ Volume Control │
+└─────────────────┘    └─────────────┘    └────────────────┘
+```
 
 
 
@@ -110,11 +108,44 @@ This script interacts with Spotify’s API to determine what’s currently playi
 
 ## Important Note
 
-- **New Connection**: When you do the authentication process you will receive an email from spotify that will inform you for a new connection and maybe they will suggest you to change a new password due to **_"Suspicious Actions"_**. Use this script at your own risk.
+- **First-time authentication will trigger a Spotify security email**
+- **This is normal behavior for new API connections**
+- **Consider using a dedicated Spotify account for testing**
 
 ## Troubleshooting
 
-- **Authentication Errors**: Delete any `.cache` files in the project directory to reset the authentication flow.
-- **No Sound Muting**: Ensure `pycaw` is installed and your system supports application-specific volume control.
-- **Spotify Not Detected**: Check if Spotify is running and accessible on the same device.
-- **Rate Limiting**: If you encounter rate-limiting issues, adjust the `CHECK_INTERVAL` in the script to reduce the frequency of API calls.
+### Common Issues
+
+#### Authentication Failures
+- Delete `.spotify_cache` file
+- Verify environment variables are set correctly
+- Check Spotify Developer Dashboard settings
+
+#### Muting Issues
+- Verify pycaw installation
+- Run script with administrator privileges
+- Check Windows audio settings
+
+#### Detection Problems
+- Increase CHECK_INTERVAL if hitting rate limits
+- Check internet connection stability
+
+#### Spotify Not Found
+- Ensure Spotify is running before script
+- Check for multiple Spotify instances
+- Verify correct Spotify installation
+
+#### Rate Limiting 
+
+- If you encounter rate-limiting issues, 
+adjust the `CHECK_INTERVAL` in the script to reduce the frequency of API calls.
+
+
+## Contributing
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a Pull Request
+
+# Thank you for reading! ❤️
+
