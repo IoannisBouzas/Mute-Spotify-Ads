@@ -50,8 +50,8 @@ def refresh_token(sp_oauth):
         token_info = sp_oauth.get_cached_token()
         if not token_info:
             print("No token cache found. Starting new authentication...")
-            auth_url = sp_oauth.get_authorize_url()
-            print(f"Please visit this URL to authorize the application: {auth_url}")
+            #auth_url = sp_oauth.get_authorize_url()
+            #print(f"Please visit this URL to authorize the application: {auth_url}")
             auth_code = sp_oauth.get_auth_response()
             token_info = sp_oauth.get_access_token(auth_code)
             if not token_info:
