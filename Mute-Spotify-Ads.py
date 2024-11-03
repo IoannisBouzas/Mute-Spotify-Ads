@@ -5,8 +5,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
-CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
-CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
+CLIENT_ID = os.getenv("SPOTIPY_CLIENT_ID")
+CLIENT_SECRET = os.getenv("SPOTIPY_CLIENT_SECRET")
 REDIRECT_URI = "http://localhost:8888/callback"
 CACHE_PATH = ".spotify_cache"
 
